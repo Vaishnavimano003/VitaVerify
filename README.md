@@ -1,2 +1,4 @@
 # VitaVerify
-This is my mini project.Author-Vaishnavi M
+This is my mini project repository.
+<br>
+Author-Vaishnavi M
