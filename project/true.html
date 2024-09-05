@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Details</title>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-image: url(./food.webp);
+            background-color: #f0f0f0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+        }
+        p {
+            margin-bottom: 10px;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet"> 
+</head>
+<body>
+    <div class="container">
+        <h1>PRODUCT DETAILS</h1>
+        <p><strong>PRODUCT NAME:</strong> <span id="product-name"></span></p>
+        <p><strong>INGREDIENTS:</strong> <span id="extracted-text"></span></p>
+        <h2>INGREDIENT ANALYSIS:</h2>
+        <p id="api-response"></p>
+    </div>
+
+    <script>
+        
+        const urlParams = new URLSearchParams(window.location.search);
+        const productName = urlParams.get('product_name');
+        const extractedText = urlParams.get('extracted_text');
+        let apiResponse = urlParams.get('api_response');
+         apiResponse = apiResponse.replace(/\n/g, "<br>").replace(/\*/g, ' ');
+         
+
+        document.getElementById('product-name').textContent = productName;
+        document.getElementById('extracted-text').textContent = extractedText;
+        document.getElementById('api-response').innerHTML = apiResponse;
+    </script>
+</body>
+</html>
+

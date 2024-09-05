@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Page</title>
+    <style>
+        /* Add some basic styling */
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-image: url(./food.webp);
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+        .container {
+            max-width: 400px;
+            margin: 200px auto;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+        }
+        input[type="text"] {
+            width: calc(100% - 120px);
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        input[type="file"] {
+            margin-bottom: 10px;
+        }
+        button {
+            width: 100px;
+            padding: 10px 0;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet"> 
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js"></script>
+    <!-- Add the script tag for GoogleGenerativeAI library -->
+    <script>var exports= {}</script>
+    <script src="https://cdn.jsdelivr.net/npm/@google/generative-ai@0.11.1/dist/index.min.js"></script>
+    
+</head>
+
+<body>
+    <div class="container">
+        <h2 style="text-align: center;">Get Instant Food Ingredient Analysis</h2> 
+        <p style="text-align: center;">Know what's in your food with a simple search.</p> 
+        <form id="searchForm" style="text-align: center;">
+            <input id="product-name-input" type="text" placeholder="Enter desired product name">
+            <br>
+            <input id="image-input" type="file" accept="image/*">
+            <br>
+            <button type="submit">Search</button>
+        </form>
+    </div>
+
+    <script>
+        async function loadModules() {
+            const { GoogleGenerativeAI } = await import("@google/generative-ai");
+            // const { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } = await import("@google/generative-ai");
+            // Your code using GoogleGenerativeAI, HarmCategory, HarmBlockThreshold goes here
+        }
+
+        loadModules();
+
+        document.getElementById("searchForm").addEventListener("submit", async function(event) {
+            event.preventDefault();
+            try {
+                
+                const productName = document.getElementById("product-name-input").value;
+                const imageFile = document.getElementById("image-input").files[0];
+
+                const { data: { text } } = await Tesseract.recognize(imageFile, 'eng');
+
+                console.log("Extracted text:", text);
+
+                const API_KEY = "Write your API-Key";
+                const MODEL_NAME = "gemini-1.5-pro-latest";
+                const genAI = new GoogleGenerativeAI(API_KEY);
+                const model = genAI.getGenerativeModel({ model: MODEL_NAME });
+
+                const generationConfig = {
+                    temperature: 1,
+                    topK: 64,
+                    topP: 0.95,
+                    maxOutputTokens: 8192,
+                };
+
+//                 const safetySettings = [
+//     {
+//       category: HarmCategory.HARM_CATEGORY_HARASSMENT,
+//       threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+//     },
+//     {
+//       category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+//       threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+//     },
+//     {
+//       category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
+//       threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+//     },
+//     {
+//       category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+//       threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+//     },
+//   ];
+
+
+                const chat = model.startChat({
+                    generationConfig,
+                    //safetySettings,
+                    history: [
+      {
+        role: "user",
+        parts: [{ text: "on inputting a list of ingredients,you should give general information on the ingredients,their risks and if possible highlight the harmful ingredients"}],
+      },
+      {
+        role: "model",
+        parts: [{ text: "Okay, I can help you analyze a list of ingredients.  To give you the most helpful information, please provide me with the list and tell me:\n\n* **What is the product?** (Food, cosmetic, cleaning product, etc.) This helps me understand the context of the ingredients and potential risks.\n* **Who is this product intended for?**  (Adults, children, pets, etc.)  This helps me assess potential risks for specific populations. \n* **What are your specific concerns?** (Allergies, toxicity, environmental impact, etc.)  Let me know if you have any particular areas of focus.\n\nOnce you provide me with this information, I can do my best to:\n\n* **Identify the ingredients:** I can recognize common ingredients and provide general information about their source, function, and potential benefits.\n* **Highlight potentially harmful ingredients:** I can flag ingredients known for allergies, toxicity, or other safety concerns based on current scientific understanding. \n* **Provide information on potential risks:** I can offer general information on potential health and environmental risks associated with the ingredients. \n\n**However, please keep in mind:**\n\n* **I am not a medical or scientific professional.** The information I provide should not be taken as medical advice. Always consult with a qualified professional for any health concerns.\n* **Ingredient safety is complex.** Even \"natural\" ingredients can have risks, and the presence of a potentially harmful ingredient doesn't automatically make a product unsafe.  The concentration, processing, and other factors play a role.\n\nI look forward to helping you understand your ingredient list!"}],
+      },
+      {
+        role: "user",
+        parts: [{ text: "Rolled Oats (25.1%), Candied Fruit and Nut (24%) | {Candied Cranberry (14%), Almonds (10%)}, Sugar, Oat Flour (10.7%), | Edible Vegetable Oil (Palmolein), Rice (4.2%), Whole Wheat (39%), Rice Flour (2.7%), Liquid Glucose, Corn Flour (1.8%), Honey, Malt Extract, Wheat Bran (0.6%), Wheat Flour (0.5%), lodized Salt, Dextrose, Barley Flour (0.1%), Vitamins, Raising Agent (INS 500i), Minerals, Antioxidant (INS 320) CONTAINS ADDED FLAVOURS (NATURE IDENTICAL AND ARTIFICIAL CREAM FLAVOURING SUBSTANCES) CONTAINS GLUTEN, ALMONDS, | MAY CONTAIN TRACES OF SOY AND MILK."}],
+      },
+      {
+        role: "model",
+        parts: [{ text: "You've provided the ingredients for what looks like a breakfast cereal or granola bar. Here's a breakdown of the ingredients, potential risks, and some points to consider:\n\n**General Information**\n\n* **Rolled Oats (25.1%):** A good source of fiber, which can help lower cholesterol and regulate blood sugar.\n* **Candied Fruit and Nut (24%):** Adds sweetness and texture. However, candied fruits are high in sugar.\n    * **Candied Cranberry (14%):** Cranberries are rich in antioxidants, but the candying process adds significant sugar.\n    * **Almonds (10%):** A good source of healthy fats, protein, and vitamin E.\n* **Sugar:** Provides sweetness, but excessive sugar intake can lead to health problems.\n* **Oat Flour (10.7%):** Made from ground oats; provides fiber and nutrients.\n* **Edible Vegetable Oil (Palmolein):**  A type of palm oil. Palm oil production raises sustainability concerns due to deforestation.\n* **Rice (4.2%), Whole Wheat (3%), Rice Flour (2.7%):** Grains that provide carbohydrates for energy. Whole wheat is a good source of fiber.\n* **Liquid Glucose, Corn Flour (1.8%), Honey, Malt Extract:** All provide sweetness and contribute to the product's texture. Corn is often genetically modified.\n* **Wheat Bran (0.6%):** High in fiber, promoting digestive health.\n* **Wheat Flour (0.5%):**  Refined wheat flour, which is lower in fiber than whole wheat.\n* **Iodized Salt:** Provides essential iodine.\n* **Dextrose:** A simple sugar.\n* **Barley Flour (0.1%):** A grain that provides carbohydrates and some fiber.\n* **Vitamins and Minerals:** Added to enhance nutritional value.\n* **Raising Agent (INS 500i):** Baking soda, used to create a lighter texture.\n* **Antioxidant (INS 320):** Butylated hydroxyanisole (BHA), a preservative that has raised some health concerns in high doses.\n* **Flavors (Nature Identical and Artificial Cream Flavoring Substances):**  Artificial flavors can contain various chemicals, the long-term effects of which are not fully understood.\n\n**Potential Risks and Concerns**\n\n* **High Sugar Content:** This product likely contains a significant amount of sugar from multiple sources (candied fruit, sugar, liquid glucose, honey, dextrose, malt extract). Excessive sugar intake is linked to weight gain, type 2 diabetes, and other health problems.\n* **Palm Oil (Palmolein):** The use of palm oil raises sustainability concerns due to its link to deforestation and habitat loss.\n* **Artificial Flavors and Additives:**  The long-term health effects of some artificial flavors and additives are not fully understood. Some individuals may be sensitive to certain additives. \n* **Antioxidant (INS 320):** BHA is a controversial additive. While it is generally considered safe in low doses, some studies suggest potential health risks at higher levels.\n* **Allergen Information:** The product contains gluten and almonds and may contain traces of soy and milk, posing a risk to individuals with those allergies.\n\n**Recommendations:**\n\n* **Enjoy in moderation:** Due to the high sugar content and potential for less healthy additives, it's best to consume this product in moderation as part of a balanced diet.\n* **Consider alternatives:** Explore similar products with lower sugar content or those made with alternative oils to palm oil if sustainability is a concern. \n* **Read labels carefully:** Pay close attention to the ingredient list and nutritional information of any food product, especially if you have allergies or sensitivities.\n\nRemember, this information is for general knowledge only and shouldn't replace advice from a doctor or registered dietitian."}],
+      },
+    ],
+  });
+
+                const result = await chat.sendMessage(text);
+                const response = result.response;
+                console.log("API response:", response.text());
+
+                window.location.href = `true.html?product_name=${encodeURIComponent(productName)}&extracted_text=${encodeURIComponent(text)}&api_response=${encodeURIComponent(response.text())}`;
+            } catch (error) {
+                console.error("Error:", error);
+            }
+        });
+    </script>
+</body>
+</html>
